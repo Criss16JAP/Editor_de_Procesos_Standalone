@@ -124,7 +124,8 @@ export interface ITask {
 ### 4.2 Interfaz del Motor de Estado Global y Acciones (`useProcessStore`)
 
 Contrato lógico de Zustand que define las variables de estado reactivas y los despachadores de mutación inmutable:
- 
+```
+
 ```typescript
 
 export interface IValidationIssue {
@@ -186,17 +187,9 @@ export interface IProcessState {
   runValidation: () => void; // Evalúa el árbol y computa 'validationIssues' e 'isExportable'
 
 }
- 
- ```python
-markdown_content = """## 5. RESULTADO D: CARACTERÍSTICAS DETALLADAS DE DISEÑO DE LOS ELEMENTOS
-
-El sistema adopta una topología de arquitectura limpia desacoplada en capas de ejecución secuencial, distribuyendo las responsabilidades en el hilo del cliente de la siguiente forma:
-
-
 ```
+ 
 
-```text
-Archivo guardado exitosamente como DDD_Diseno_Detallado_Secciones_5-9.md
 
 ```text
 +-----------------------------------------------------------------------------------+
@@ -354,18 +347,3 @@ Para garantizar que cada decisión técnica y componente de software responda de
 | **RNF-03** | `ValidationMessages` | Mapeo tipado indexado por códigos de error de negocio | Inspección estática del archivo de cadenas idiomáticas. |
 | **RNF-05** | Configuración Vite | Pipeline de optimización y minificación en `vite.config.ts` | Auditoría automatizada de rendimiento en navegador (Métricas Lighthouse). |
 | **RNF-06** | `Zustand Store` | Selectores atómicos e inmutables del estado global | Medición con el analizador de rendimiento de CPU del navegador (*Chrome DevTools*). |
-| """ |  |  |  |
-
-filename = "DDD_Diseno_Detallado_Secciones_5-9.md"
-with open(filename, "w", encoding="utf-8") as file:
-file.write(markdown_content)
-
-print(f"Archivo guardado exitosamente como {filename}")
-
-```
-Your Markdown file is ready
-[file-tag: code-generated-file-0-1781382427712518992]
-
-He generado el archivo `.md` conteniendo exactamente las secciones desde la número 5 (Características Detalladas de Diseño) hasta la 9 (Trazabilidad Bidireccional). Puedes descargarlo haciendo clic en la etiqueta de arriba.
-
-```
