@@ -58,9 +58,11 @@ body {
 /* Grid Utilities */
 .grid { display: grid; }
 .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.gap-1 { gap: 0.25rem; }
 .gap-3 { gap: 0.75rem; }
 .gap-4 { gap: 1rem; }
 .flex { display: flex; }
+.flex-wrap { flex-wrap: wrap; }
 .flex-col { flex-direction: column; }
 .justify-between { justify-content: space-between; }
 .align-center { align-items: center; }
@@ -485,6 +487,33 @@ body {
   background-color: var(--color-accent-blue-soft);
   color: var(--color-accent-blue);
   border: 1px solid rgba(37, 99, 235, 0.15);
+}
+
+.badge-tag {
+  background-color: var(--color-bg-main);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 4px;
+}
+
+.tag-remove-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
+  padding: 0 0.1rem;
+  font-weight: bold;
+}
+
+.tag-remove-btn:hover {
+  color: var(--color-critical-red);
 }
 
 /* Tareas */

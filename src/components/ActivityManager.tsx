@@ -1,16 +1,45 @@
 import { useProcessStore } from '../store/useProcessStore';
 
+const DEFAULT_IO_OPTIONS = [
+  'Documento de Requisitos (SRS)',
+  'Especificación de Diseño',
+  'Código Fuente / Repositorio',
+  'Plan de Pruebas',
+  'Casos de Prueba',
+  'Manual de Usuario',
+  'Plan de Proyecto',
+  'Modelo Entidad-Relación',
+  'Script de Base de Datos',
+  'Acta de Aceptación',
+  'Prototipo de Interfaz',
+  'Guía Metodológica'
+];
+
 export const ActivityManager: React.FC = () => {
   const { 
-    document: doc, 
-    addActivity, 
-    updateActivity, 
-    removeActivity, 
-    addTask, 
-    updateTask, 
-    removeTask 
+    document: doc,
+    addActivity,
+    updateActivity,
+    removeActivity,
+    addTask,
+    updateTask,
+    removeTask,
+    moveActivityUp,
+    moveActivityDown,
+    moveTaskUp,
+    moveTaskDown,
+    getAllInputs,
+    getAllOutputs,
   } = useProcessStore();
   const { actividades } = doc.process;
+
+  const getCombinedIOOptions = () => {
+    const custom = new Set<string>();
+    getAllInputs().forEach(x => custom.add(x));
+    getAllOutputs().forEach(x => custom.add(x));
+    const combined = new Set([...DEFAULT_IO_OPTIONS, ...Array.from(custom)]);
+    return Array.from(combined).sort((a, b) => a.localeCompare(b));
+  };
 
   const handleRemoveActivity = (id: string, name: string) => {
     if (window.confirm(`¿Está seguro de eliminar la actividad "${name || 'Sin nombre'}" y todas sus tareas?`)) {
@@ -72,6 +101,8 @@ export const ActivityManager: React.FC = () => {
                 <div className="activity-card-header">
                   <div className="activity-card-title-group">
                     <span className="badge badge-activity">Actividad {actIdx + 1}</span>
+                    <button type="button" onClick={() => moveActivityUp(actIdx)} className="icon-btn btn-secondary" title="Mover arriba">▲</button>
+                    <button type="button" onClick={() => moveActivityDown(actIdx)} className="icon-btn btn-secondary" title="Mover abajo">▼</button>
                     <input
                       type="text"
                       className="activity-title-input"
@@ -140,6 +171,8 @@ export const ActivityManager: React.FC = () => {
                                   value={task.nombre}
                                   onChange={(e) => updateTask(activity.id, task.id, { nombre: e.target.value })}
                                 />
+                                <button type="button" onClick={() => moveTaskUp(activity.id, tIdx)} className="icon-btn btn-secondary" title="Mover arriba">▲</button>
+                                <button type="button" onClick={() => moveTaskDown(activity.id, tIdx)} className="icon-btn btn-secondary" title="Mover abajo">▼</button>
                               </div>
                               <button
                                 type="button"
@@ -158,25 +191,121 @@ export const ActivityManager: React.FC = () => {
                               {/* Entradas */}
                               <div className="form-group mb-2">
                                 <label className="form-label-task">Insumos (Entradas)</label>
-                                <input
-                                  type="text"
-                                  className={`form-input form-input-task ${task.entradas.length === 0 ? 'input-warning-soft' : ''}`}
-                                  placeholder="Ej. Acta de Inicio, Requisitos iniciales (Separados por coma)"
-                                  value={formatCommaSeparated(task.entradas)}
-                                  onChange={(e) => updateTask(activity.id, task.id, { entradas: parseCommaSeparated(e.target.value) })}
-                                />
+                                <div className="selected-tags flex flex-wrap gap-1 mb-2">
+                                  {task.entradas.length === 0 ? (
+                                    <span className="text-muted text-xs">Sin insumos seleccionados</span>
+                                  ) : (
+                                    task.entradas.map((inp) => (
+                                      <span key={inp} className="badge-tag flex align-center gap-1">
+                                        {inp}
+                                        <button
+                                          type="button"
+                                          className="tag-remove-btn"
+                                          onClick={() => {
+                                            const updated = task.entradas.filter(item => item !== inp);
+                                            updateTask(activity.id, task.id, { entradas: updated });
+                                          }}
+                                        >
+                                          ×
+                                        </button>
+                                      </span>
+                                    ))
+                                  )}
+                                </div>
+                                <div className="flex gap-1">
+                                  <select
+                                    className="form-select form-input-task"
+                                    value=""
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      if (val && !task.entradas.includes(val)) {
+                                        const updated = [...task.entradas, val];
+                                        updateTask(activity.id, task.id, { entradas: updated });
+                                      }
+                                    }}
+                                  >
+                                    <option value="" disabled>-- Seleccionar Insumo --</option>
+                                    {getCombinedIOOptions().map((opt, i) => (
+                                      <option key={i} value={opt}>{opt}</option>
+                                    ))}
+                                  </select>
+                                  <button
+                                    type="button"
+                                    className="btn btn-xs btn-secondary"
+                                    onClick={() => {
+                                      const newVal = window.prompt('Nuevo valor de entrada/insumo');
+                                      if (newVal && newVal.trim() !== '') {
+                                        const trimmed = newVal.trim();
+                                        if (!task.entradas.includes(trimmed)) {
+                                          const updated = [...task.entradas, trimmed];
+                                          updateTask(activity.id, task.id, { entradas: updated });
+                                        }
+                                      }
+                                    }}
+                                  >
+                                    +
+                                  </button>
+                                </div>
                               </div>
 
                               {/* Productos de Trabajo */}
                               <div className="form-group mb-2">
                                 <label className="form-label-task">Entregables (Productos de Trabajo)</label>
-                                <input
-                                  type="text"
-                                  className={`form-input form-input-task ${task.productosTrabajo.length === 0 ? 'input-warning-soft' : ''}`}
-                                  placeholder="Ej. Matriz de Requisitos, Minuta de Entrevistas (Separados por coma)"
-                                  value={formatCommaSeparated(task.productosTrabajo)}
-                                  onChange={(e) => updateTask(activity.id, task.id, { productosTrabajo: parseCommaSeparated(e.target.value) })}
-                                />
+                                <div className="selected-tags flex flex-wrap gap-1 mb-2">
+                                  {task.productosTrabajo.length === 0 ? (
+                                    <span className="text-muted text-xs">Sin entregables seleccionados</span>
+                                  ) : (
+                                    task.productosTrabajo.map((out) => (
+                                      <span key={out} className="badge-tag flex align-center gap-1">
+                                        {out}
+                                        <button
+                                          type="button"
+                                          className="tag-remove-btn"
+                                          onClick={() => {
+                                            const updated = task.productosTrabajo.filter(item => item !== out);
+                                            updateTask(activity.id, task.id, { productosTrabajo: updated });
+                                          }}
+                                        >
+                                          ×
+                                        </button>
+                                      </span>
+                                    ))
+                                  )}
+                                </div>
+                                <div className="flex gap-1">
+                                  <select
+                                    className="form-select form-input-task"
+                                    value=""
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      if (val && !task.productosTrabajo.includes(val)) {
+                                        const updated = [...task.productosTrabajo, val];
+                                        updateTask(activity.id, task.id, { productosTrabajo: updated });
+                                      }
+                                    }}
+                                  >
+                                    <option value="" disabled>-- Seleccionar Entregable --</option>
+                                    {getCombinedIOOptions().map((opt, i) => (
+                                      <option key={i} value={opt}>{opt}</option>
+                                    ))}
+                                  </select>
+                                  <button
+                                    type="button"
+                                    className="btn btn-xs btn-secondary"
+                                    onClick={() => {
+                                      const newVal = window.prompt('Nuevo valor de entregable/salida');
+                                      if (newVal && newVal.trim() !== '') {
+                                        const trimmed = newVal.trim();
+                                        if (!task.productosTrabajo.includes(trimmed)) {
+                                          const updated = [...task.productosTrabajo, trimmed];
+                                          updateTask(activity.id, task.id, { productosTrabajo: updated });
+                                        }
+                                      }
+                                    }}
+                                  >
+                                    +
+                                  </button>
+                                </div>
                               </div>
 
                               {/* Roles Involucrados */}
