@@ -39,12 +39,3 @@ El análisis se realiza contrastando las propuestas de solución frente a la **a
 * **Análisis frente a Requisitos:** Esta alternativa encaja con el diseño inicial histórico de la aplicación, donde operaba de manera aislada en el cliente. Sin embargo, **viola de forma absoluta la nueva especificación técnica de la ISO 12207 para este proyecto**.
 * **Análisis de Impacto:** Si se implementa la Propuesta 3, se estaría ignorando el mandato explícito que traslada la fuente oficial de la verdad del sistema a la base de datos remota del backend. Esta propuesta anula el módulo de comunicación HTTP, las métricas de latencia de red corporativa (**RNF-09**), el almacenamiento en la nube controlado por tokens de sesión y las validaciones secundarias del servidor. Bajo la documentación actual, el uso de almacenamiento local (`localStorage`) queda degradado estrictamente a un mecanismo de tolerancia a fallos en situaciones de caída de internet, por lo que no puede ser la solución principal.
 
----
-
-### 3. Decisión Técnica Recomendada para la Solución
-
-Para cumplir al 100% con los objetivos de negocio del cliente, asegurar las restricciones arquitectónicas de la **ISO 12207 (Frontend Web + API REST)** y respetar el entorno del servidor aprobado (PHP en Windows Server), se dictamina la adopción de una **Optimización de la Propuesta 1 (Stack Tecnológico Alineado)**:
-
-1. **Capa Frontend (SPA):** Desarrollada con la biblioteca **React.js** (compilada con Vite). Se encarga de la manipulación fluida del estado jerárquico de la norma ISO 24774 en memoria, gestiona el motor de validación ágil local, utiliza la HTML5 File System Access API para descargas locales de archivos de respaldo `.pro` y aplica las reglas CSS de impresión `@media print` para generar los reportes PDF. Comunica sus transacciones de forma asíncrona mediante JSON a la red.
-2. **Capa Backend (API REST):** Desarrollada en **PHP** estructurado (o microframeworks de servicios como Slim/Lumen) alojado en el servidor Windows de Hostinger predeterminado. Su propósito será recibir los payloads JSON, aplicar el motor secundario de validación semántica de datos, gestionar la lógica de las cuentas de usuario mediante tokens de sesión y despachar los endpoints de persistencia.
-3. **Capa de Persistencia:** Base de datos relacional **MySQL / MariaDB** configurada en el hosting remoto, operando como el repositorio de datos centralizado y oficial del sistema para mitigar la dependencia exclusiva de los archivos locales del usuario.
