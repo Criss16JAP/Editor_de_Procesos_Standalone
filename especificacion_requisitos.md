@@ -46,5 +46,3 @@ Este documento define formalmente los requisitos funcionales (qué debe hacer el
 * **RNF-07 (Tiempo de Generación de Reporte - TPM-03):** El renderizado del archivo PDF final y el inicio de su descarga local debe completarse en menos de 3.0 segundos para procesos de tamaño normal (de hasta 50 nodos).
 * **RNF-08 (Velocidad de Deserialización):** El proceso de carga, validación y dibujo en pantalla de un archivo `.pro` de hasta 5 MB de tamaño debe ejecutarse en menos de 3.0 segundos.
 * **RNF-09 (Latencia de Red - TPM-05):** Las peticiones de guardado o consulta asíncrona transmitidas a la API REST del backend no deberán experimentar una latencia superior a los 800 milisegundos en condiciones normales de conectividad.
-
-#### 2
