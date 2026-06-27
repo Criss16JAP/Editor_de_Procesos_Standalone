@@ -104,6 +104,16 @@ export interface IProcessState {
 
   setPdfOrientation: (orientation: 'PORTRAIT' | 'LANDSCAPE') => void;
   runValidation: () => void;
+  // Reordering methods
+  moveOutcomeUp: (index: number) => void;
+  moveOutcomeDown: (index: number) => void;
+  moveActivityUp: (index: number) => void;
+  moveActivityDown: (index: number) => void;
+  moveTaskUp: (activityId: string, taskIndex: number) => void;
+  moveTaskDown: (activityId: string, taskIndex: number) => void;
+  // IO collection
+  getAllInputs: () => string[];
+  getAllOutputs: () => string[];
 }
 
 export const useProcessStore = create<IProcessState>((set, get) => {
@@ -396,6 +406,117 @@ export const useProcessStore = create<IProcessState>((set, get) => {
 
     setPdfOrientation: (orientation) => {
       set({ pdfOrientation: orientation });
+    },
+
+    // Reorder Outcomes (Resultados Esperados)
+    moveOutcomeUp: (index) => {
+      const doc = get().document;
+      const outcomes = [...doc.process.resultadosEsperados];
+      if (index > 0 && index < outcomes.length) {
+        const [moved] = outcomes.splice(index, 1);
+        outcomes.splice(index - 1, 0, moved);
+        const updatedDoc = { ...doc, timestamp: Date.now(), process: { ...doc.process, resultadosEsperados: outcomes } };
+        const val = syncValidation(updatedDoc);
+        set({ document: updatedDoc, validationIssues: val.validationIssues, isExportable: val.isExportable, isDirty: true });
+      }
+    },
+    moveOutcomeDown: (index) => {
+      const doc = get().document;
+      const outcomes = [...doc.process.resultadosEsperados];
+      if (index >= 0 && index < outcomes.length - 1) {
+        const [moved] = outcomes.splice(index, 1);
+        outcomes.splice(index + 1, 0, moved);
+        const updatedDoc = { ...doc, timestamp: Date.now(), process: { ...doc.process, resultadosEsperados: outcomes } };
+        const val = syncValidation(updatedDoc);
+        set({ document: updatedDoc, validationIssues: val.validationIssues, isExportable: val.isExportable, isDirty: true });
+      }
+    },
+
+    // Reorder Activities
+    moveActivityUp: (index) => {
+      const doc = get().document;
+      const actividades = [...doc.process.actividades];
+      if (index > 0 && index < actividades.length) {
+        const [moved] = actividades.splice(index, 1);
+        actividades.splice(index - 1, 0, moved);
+        const updatedDoc = { ...doc, timestamp: Date.now(), process: { ...doc.process, actividades } };
+        const val = syncValidation(updatedDoc);
+        set({ document: updatedDoc, validationIssues: val.validationIssues, isExportable: val.isExportable, isDirty: true });
+      }
+    },
+    moveActivityDown: (index) => {
+      const doc = get().document;
+      const actividades = [...doc.process.actividades];
+      if (index >= 0 && index < actividades.length - 1) {
+        const [moved] = actividades.splice(index, 1);
+        actividades.splice(index + 1, 0, moved);
+        const updatedDoc = { ...doc, timestamp: Date.now(), process: { ...doc.process, actividades } };
+        const val = syncValidation(updatedDoc);
+        set({ document: updatedDoc, validationIssues: val.validationIssues, isExportable: val.isExportable, isDirty: true });
+      }
+    },
+
+    // Reorder Tasks within an Activity
+    moveTaskUp: (activityId, taskIndex) => {
+      const doc = get().document;
+      const updatedActividades = doc.process.actividades.map(act => {
+        if (act.id === activityId) {
+          const tareas = [...act.tareas];
+          if (taskIndex > 0 && taskIndex < tareas.length) {
+            const [moved] = tareas.splice(taskIndex, 1);
+            tareas.splice(taskIndex - 1, 0, moved);
+          }
+          return { ...act, tareas };
+        }
+        return act;
+      });
+      const updatedDoc = { ...doc, timestamp: Date.now(), process: { ...doc.process, actividades: updatedActividades } };
+      const val = syncValidation(updatedDoc);
+      set({ document: updatedDoc, validationIssues: val.validationIssues, isExportable: val.isExportable, isDirty: true });
+    },
+    moveTaskDown: (activityId, taskIndex) => {
+      const doc = get().document;
+      const updatedActividades = doc.process.actividades.map(act => {
+        if (act.id === activityId) {
+          const tareas = [...act.tareas];
+          if (taskIndex >= 0 && taskIndex < tareas.length - 1) {
+            const [moved] = tareas.splice(taskIndex, 1);
+            tareas.splice(taskIndex + 1, 0, moved);
+          }
+          return { ...act, tareas };
+        }
+        return act;
+      });
+      const updatedDoc = { ...doc, timestamp: Date.now(), process: { ...doc.process, actividades: updatedActividades } };
+      const val = syncValidation(updatedDoc);
+      set({ document: updatedDoc, validationIssues: val.validationIssues, isExportable: val.isExportable, isDirty: true });
+    },
+
+    // Get all unique inputs across tasks
+    getAllInputs: () => {
+      const doc = get().document;
+      const inputsSet = new Set<string>();
+      doc.process.actividades.forEach(act => {
+        act.tareas.forEach(task => {
+          task.entradas.forEach(inp => {
+            if (inp && inp.trim() !== '') inputsSet.add(inp.trim());
+          });
+        });
+      });
+      return Array.from(inputsSet);
+    },
+    // Get all unique outputs across tasks
+    getAllOutputs: () => {
+      const doc = get().document;
+      const outputsSet = new Set<string>();
+      doc.process.actividades.forEach(act => {
+        act.tareas.forEach(task => {
+          task.productosTrabajo.forEach(out => {
+            if (out && out.trim() !== '') outputsSet.add(out.trim());
+          });
+        });
+      });
+      return Array.from(outputsSet);
     },
 
     runValidation: () => {
